@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.memo.PatientMemoDao">
+    <insert id="addMemo" parameterType="PatientMemoDto">
+        insert into t_patient_memo
+        (patientId, content, createTime, updateTime)
+        values
+        (#{patientId}, #{content}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <delete id="delMemo" parameterType="PatientMemoDto">
+        delete from  t_patient_memo
+        <where>
+            id = #{id} and patientId = #{patientId}
+        </where>
+    </delete>
+    
+    <update id="modMemo" parameterType="PatientMemoDto">
+    	update t_patient_memo
+    	set content = #{content}, updateTime = #{updateTime}
+    	<where>
+            id = #{id} and patientId = #{patientId}
+        </where>
+    </update>
+
+	<select id="queryMemos" parameterType="PatientMemoDto" resultType="PatientMemoDto">
+		select * from t_patient_memo
+		<where>
+			patientId = #{patientId}
+		</where>
+	</select>
+</mapper>

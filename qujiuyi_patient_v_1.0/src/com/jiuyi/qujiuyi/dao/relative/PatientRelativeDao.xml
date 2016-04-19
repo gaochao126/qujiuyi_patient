@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.relative.PatientRelativeDao">
+    <insert id="addRelative" parameterType="PatientRelativeDto">
+        insert into t_patient_relative
+        (patientId, phone, name, gender,  nation,	birthday, certificateType, certificateNumber, isDefault, updateTime, createTime)
+        values
+        (#{patientId}, #{phone}, #{name}, #{gender}, #{nation}, #{birthday}, #{certificateType}, #{certificateNumber}, #{isDefault}, #{updateTime}, #{createTime})
+    </insert>
+    
+    <delete id="delRelative" parameterType="PatientRelativeDto">
+        delete from  t_patient_relative
+        <where>
+            id = #{id} and patientId = #{patientId}
+        </where>
+    </delete>
+    
+    <update id="modRelative" parameterType="PatientRelativeDto">
+        update t_patient_relative
+        set updateTime = #{updateTime}
+        <if test="name != null and name != ''">
+        	, name = #{name}
+        </if>
+        <if test="phone != null and phone != ''">
+        	, phone = #{phone}
+        </if>
+        <if test="gender != null and gender != ''">
+        	, gender = #{gender}
+        </if>
+        <if test="nation != null">
+        	,nation = #{nation}
+        </if>
+        <if test="birthday != null and birthday != ''">
+        	, birthday = #{birthday}
+        </if>
+        <if test="certificateType != null">
+        	, certificateType = #{certificateType}
+        </if>
+        <if test="certificateNumber != null and certificateNumber != ''">
+        	, certificateNumber = #{certificateNumber}
+        </if>
+        <if test="isDefault != null">
+        	, isDefault = #{isDefault}
+        </if>
+        <where>
+            id = #{id} and patientId = #{patientId}
+        </where>
+    </update>
+
+	<select id="queryRelatives" parameterType="PatientRelativeDto" resultType="PatientRelativeDto">
+		select * from t_patient_relative
+		<where>
+			patientId = #{patientId}
+		</where>
+		order by isDefault desc, createTime asc
+	</select>
+	
+	<update id="updateAllDefultByPatientId">
+		update t_patient_relative set isDefault = 0
+		<where>
+			patientId = #{patientId}
+		</where>
+	</update>
+	
+	<select id="getPatientRelativeById" parameterType="PatientRelativeDto" resultType="PatientRelativeDto">
+		select * from t_patient_relative
+		<where>
+			id = #{id}
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.register.PatientRegisterDao">
+	<insert id="createRegister" parameterType="PatientRegisterDto">
+		insert into t_patient_register
+		(
+			patientId,          patientName,      certificateNumber,     relativeId,	  patientAge,		hospitalId,      hospitalName,     departmentId, 
+			departmentName,     doctorId,         doctorName,            registerTime,    planId,           status,  
+			doctorTitleName,    outTradeNo,       gender,                patientPhone,	  displayStatus,	checkInDate,	 numSourceId,	   scheduleDate,
+			visitCost,			timeRange,		  payMode,				 visitNo,		  billNo,			startTime,		 endTime
+		)
+		values
+		(
+			#{patientId},       #{patientName},   #{certificateNumber},  #{relativeId},   #{patientAge},	#{hospitalId},    #{hospitalName},  #{departmentId}, 
+			#{departmentName},  #{doctorId},      #{doctorName},         #{registerTime}, #{planId},        #{status}, 
+			#{doctorTitleName}, #{outTradeNo},    #{gender},             #{patientPhone}, #{displayStatus},	#{checkInDate},	  #{numSourceId},	#{scheduleDate},
+			#{visitCost},		#{timeRange},	  #{payMode},			 #{visitNo},	  #{billNo},		#{startTime},	  #{endTime}
+		)	
+	</insert>
+	
+	<select id="getPatientRegisterList" parameterType="PatientRegisterDto"  resultType="PatientRegisterDto">
+		select distinct a.*, b.registerDate seeDoctorDate, b.timeZone, b.price,
+        case when c.serviceId is null then 0 else 1 end as isCommented, c.commentContent, c.satisfaction
+        from t_patient_register a
+		left join t_doctor_register_plan b on a.planId = b.id
+        left join t_doctor_comment c on a.id = c.serviceId and c.serviceType = 1
+		<where>
+			a.patientId = #{patientId}
+			and a.displayStatus &lt;&gt; 0
+			<if test="status != null">
+				and a.status = #{status}
+			</if>
+			order by a.registerTime desc
+		</where>
+	</select>
+	
+	<update id="delRegister" parameterType="PatientRegisterDto">
+		update t_patient_register set displayStatus = 0
+		<where>
+			id = #{id}
+			and patientId = #{patientId}
+			and status &lt;&gt; 0
+		</where>
+	</update>
+	
+	<update id="cancelRegister" parameterType="PatientRegisterDto">
+		update t_patient_register set status = #{status}
+		<where>
+			id = #{id}
+			<if test="patientId != null">
+				and patientId = #{patientId}
+			</if>
+			
+			and status = 0
+		</where>
+	</update>
+	
+	<!-- 查询挂号详情 -->
+	<select id="queryRegisterDetail" parameterType="PatientRegisterDto"  resultType="PatientRegisterDto">
+		select a.*, b.registerDate seeDoctorDate, b.timeZone
+		from t_patient_register a 
+		left join t_doctor_register_plan b on a.planId = b.id
+		<where>
+			<if test="id != null">
+				a.id = #{id}
+			</if>
+			<if test="patientId != null">
+				and a.patientId = #{patientId}
+			</if>
+			<if test="outTradeNo">
+				and a.outTradeNo = #{outTradeNo}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 修改预约计划为已过期 -->
+	<update id="updateRegisterStatus" parameterType="PatientRegisterDto">
+		<!-- 上午改变当天日期之前的所有待就诊状态的挂号为过期 -->
+		<if test="timeZone == 0">
+			update t_patient_register set status = 3
+				where scheduleDate &lt; #{registerTime} and status = 0
+		</if>
+		
+		<!-- 下午，改变当天上午的所有带就诊挂号为过期 -->
+		<if test="timeZone == 1">
+			update t_patient_register set status = 3
+				where scheduleDate = #{registerTime} and status = 0 and timeRange = 0
+		</if>
+		
+		<!-- 晚上，改变当天下午的所有带就诊挂号为过期 -->
+		<if test="timeZone == 2">
+			update t_patient_register set status = 3
+				where scheduleDate = #{registerTime} and status = 0 and timeRange = 1
+		</if>
+	</update>
+	
+	<!-- 修改患者挂号 -->
+	<update id="updatePatientRegister" parameterType="PatientRegisterDto">
+		update t_patient_register set  visitNo = #{visitNo}, billNo = #{billNo}
+		where 1
+		<if test="outTradeNo != null">
+			and outTradeNo = #{outTradeNo}
+		</if>
+		<if test="id != null">
+			and id = #{id}
+		</if>
+		
+	</update>
+	
+	<!-- 取号 -->
+	<update id="fetchNumber"  parameterType="PatientRegisterDto">
+		update t_patient_register set  checkInDate = #{checkInDate}, fetchStatus = 1
+		where 1
+		<if test="outTradeNo != null">
+			and outTradeNo = #{outTradeNo}
+		</if>
+		<if test="id != null">
+			and id = #{id}
+		</if>
+	</update>
+	
+	<!-- 查询挂号详情（从院方获取数据） -->
+	<select id="queryRegisterDetailPlus" parameterType="PatientRegisterDto" resultType="PatientRegisterDto">
+		select a.*, b.head doctorHead, b.skill, b.experience from t_patient_register a  
+		left join t_hospital_doctor b on a.doctorId = b.id
+		<where>
+			1=1
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="patientId != null">
+				and a.patientId = #{patientId}
+			</if>
+			<if test="outTradeNo">
+				and a.outTradeNo = #{outTradeNo}
+			</if>
+			<if test="certificateNumber != null">
+				and a.certificateNumber = #{certificateNumber}
+			</if>
+			<if test="numSourceId != null">
+				and a.numSourceId = #{numSourceId}
+			</if>
+			<if test="status != null">
+				and a.status = #{status}
+			</if>
+			<if test="hospitalId != null">
+				and a.hospitalId = #{hospitalId}
+			</if>
+			<if test="visitNo != null">
+				and a.visitNo = #{visitNo}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询患者挂号，院方关联接口 -->
+	<select id="getPatientRegisterListPlus" parameterType="PatientRegisterDto"  resultType="PatientRegisterDto">
+		select distinct a.*, b.head doctorHead, b.skill, b.experience,
+        case when c.serviceId is null then 0 else 1 end as isCommented, c.commentContent, c.satisfaction
+        from t_patient_register a
+        left join t_hospital_doctor b on a.doctorId = b.id
+        left join t_doctor_comment c on a.id = c.serviceId and c.serviceType = 1
+		<where>
+			a.patientId = #{patientId}
+			and a.displayStatus &lt;&gt; 0
+			<if test="status != null and status != 6">
+				and a.status = #{status}
+			</if>
+			<if test="status != null and status == 6">
+				and (a.status = 1 or a.status = 2 or a.status = 3 or a.status = 5)
+			</if>
+			order by a.registerTime desc
+		</where>
+	</select>
+	
+	<!-- 挂号失败，修改挂号计划为挂号失败，并设置为隐藏状态，该Dao用于用户付款挂号时，付款成功，但回调时挂号失败时调用，该条挂号记录在数据相当于脏数据 -->
+	<update id="updatePatientRegisterFail" parameterType="PatientRegisterDto">
+		update t_patient_register set  status = 4, displayStatus = 0
+		where 1
+		<if test="outTradeNo != null">
+			and outTradeNo = #{outTradeNo}
+		</if>
+		<if test="id != null">
+			and id = #{id}
+		</if>
+	</update>
+</mapper>

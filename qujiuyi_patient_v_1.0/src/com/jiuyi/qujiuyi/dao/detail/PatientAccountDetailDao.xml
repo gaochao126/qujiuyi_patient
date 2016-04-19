@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.detail.PatientAccountDetailDao">
+	<select id="queryPatientAccountDetail" parameterType="PatientAccountDetailDto" resultType="PatientAccountDetailDto">
+		select * from t_patient_account_detail
+		<where>
+			patientId = #{patientId}
+		</where>
+	</select>
+	
+	<insert id="savePatientAccountDetail" parameterType="PatientAccountDetailDto">
+		insert into t_patient_account_detail
+		(patientId, type, transactionNum, amount, createTime)
+		values
+		(#{patientId}, #{type}, #{transactionNum}, #{amount}, #{createTime})
+	</insert>
+</mapper>

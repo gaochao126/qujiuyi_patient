@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">   
+<configuration> 
+    <settings>
+        <!-- 这个配置使全局的映射器启用或禁用缓存 -->
+        <setting name="cacheEnabled" value="true" />
+    </settings> 
+	
+    <plugins>  
+        <!-- 分页拦截器 -->
+        <plugin interceptor="com.jiuyi.qujiuyi.common.interceptor.PageInterceptor">
+            <!-- 目前只封装了mysql和oracle分页，以下配置的值(value)忽略大小写 -->
+            <property name="databaseType" value="mysql"/>  
+        </plugin>  
+    </plugins> 
+</configuration> 

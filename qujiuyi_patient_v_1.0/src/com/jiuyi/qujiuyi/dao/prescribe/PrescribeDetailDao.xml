@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.prescribe.PrescribeDetailDao">
+	<insert id="createPrescribeDetail" parameterType="PrescribeDetailDto">
+		insert into t_prescribe_detail (prescribeId, medicineId, quantity) values (#{prescribeId}, #{medicineId}, #{quantity})
+	</insert>
+</mapper>

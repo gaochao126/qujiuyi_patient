@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.daoyao.mdeicine.YaoMedicineDao">
+	<!-- 1.根据药品ID 查询药品详情 -->
+	<select id="queryMedicineById" parameterType="YaoMedicineDto" resultType="YaoMedicineDto">
+		select * from Products where prod_id = #{prod_id}
+	</select>
+	
+	<!-- 2.根据商品规格ID查询规格对象 -->
+	<select id="YaoMedicineFormatDto" parameterType="YaoMedicineFormatDto" resultType="YaoMedicineFormatDto">
+		select * from Formats where format_id = #{format_id};
+	</select>
+	
+	<!-- 3.根据规格ID集合查询规格集合 -->
+	<select id="queryFormatListByFormatIds" resultType="YaoMedicineFormatDto">
+		select * from Formats where format_id in
+		 <foreach collection="list" item="format_id" index="index" open="(" close=")" separator=",">
+             #{format_id}
+         </foreach>
+	</select>
+	
+	<!-- 4.根据规格ID查询药品信息集合 -->
+	<select id="queryMedicineListByFormatId" resultType="YaoMedicineFormatDto">
+		select a.*,b.prod_name,b.prod_certno,b.prod_function,b.prod_chengfen,b.prod_chandi from Formats a 
+		LEFT JOIN Products b ON a.prod_id = b.prod_id
+		where a.format_id in
+		 <foreach collection="list" item="format_id" index="index" open="(" close=")" separator=",">
+             #{format_id}
+         </foreach>
+	</select>
+</mapper>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.patient.PatientDao">
+    <select id="queryPatientByPhone" parameterType="PatientDto" resultType="PatientDto">
+        select * from t_patient
+        <where>
+            phone = #{phone}
+        </where>
+    </select>
+
+    <select id="queryPatientByToken" parameterType="java.lang.String" resultType="PatientDto">
+        select * from t_patient
+        <where>
+            token = #{token}
+        </where>
+    </select>
+    
+    <select id="queryPatientById" parameterType="PatientDto" resultType="PatientDto">
+        select * from t_patient
+        <where>
+            id = #{id}
+        </where>
+    </select>
+    
+    <select id="queryPatientByWeixinOpenId" parameterType="PatientDto" resultType="PatientDto">
+        select * from t_patient
+        <where>
+            weixinOpenId = #{weixinOpenId}
+        </where>
+    </select>
+    
+    <insert id="register" parameterType="PatientDto" useGeneratedKeys="true" keyProperty="id">
+        insert into t_patient (phone, password, name, nickname, gender, registerTime, weixinOpenId, invitationCode) 
+        values (#{phone}, #{password}, #{name}, #{nickname}, #{gender}, #{registerTime}, #{weixinOpenId}, #{invitationCode})
+    </insert>
+
+	<update id="modifyPassword" parameterType="PatientDto">
+		update t_patient set password = #{newPassword}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<update id="bindWeixin" parameterType="PatientDto">
+		update t_patient set weixinOpenId = #{weixinOpenId}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<update id="resetPassword" parameterType="PatientDto">
+		update t_patient set password = #{newPassword}
+		<where>
+			phone = #{phone}
+		</where>
+	</update>
+	
+	<update id="relievePhoneBound" parameterType="PatientDto">
+		update t_patient set phone = null
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<update id="editPersonalInfo" parameterType="PatientDto">
+		update t_patient set updateTime = #{updateTime}
+		<if test="name != null">
+			,name = #{name} 
+		</if>
+		<if test="nickname != null">
+			,nickname = #{nickname} 
+		</if>
+		<if test="uid != null">
+			,uid = #{uid}
+		</if>
+		<if test="yibaoId != null">
+			,yibaoId = #{yibaoId} 
+		</if>
+		<if test="phone != null">
+			,phone = #{phone} 
+		</if>
+		<if test="email != null">
+			,email = #{email} 
+		</if>
+		<if test="headPortrait != null">
+			,headPortrait = #{headPortrait} 
+		</if>
+		<if test="gender != null">
+			,gender = #{gender} 
+		</if>
+		<if test="birthday != null">
+			,birthday = #{birthday} 
+		</if>
+		<if test="address != null">
+			,address = #{address} 
+		</if>
+		<if test="pushSwitchStatus != null">
+			,pushSwitchStatus = #{pushSwitchStatus} 
+		</if>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<insert id="collectDoctor" parameterType="PatientCollectDto">
+		insert into t_patient_collect(patientId, doctorId, collectTime) 
+		values(#{patientId}, #{doctorId}, #{collectTime})
+	</insert>
+	
+	<update id="updateBalance" parameterType="PatientDto">
+		update t_patient set balance = #{balance}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<select id="queryPatientByInvitationCode" parameterType="PatientDto" resultType="PatientDto">
+		select * from t_patient
+		<where>
+			invitationCode = #{invitationCode}
+		</where>
+	</select>
+	
+	<update id="setWithdrawalPassword" parameterType="PatientDto">
+		update t_patient set withdrawalPassword = #{withdrawalPassword}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<update id="saveToken" parameterType="PatientDto">
+		update t_patient set token = #{token}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<update id="removeToken" parameterType="PatientDto">
+		update t_patient set token = ''
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<update id="removeWinxinBind" parameterType="PatientDto">
+		update t_patient set weixinOpenId = null
+		<where>
+			id = #{id}
+		</where>
+	</update>
+</mapper>

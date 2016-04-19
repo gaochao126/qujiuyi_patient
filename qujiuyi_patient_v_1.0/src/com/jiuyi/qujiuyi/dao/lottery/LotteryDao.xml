@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.lottery.LotteryDao">
+	<insert id="addLottery" parameterType="LotteryDto">
+		insert into t_lottery_activity 
+		(
+			no,		theme,		name,		codeWord,		startTime,		endTime,		icon
+		)
+		values 
+		(
+			#{no},	#{theme},	#{name},	#{codeWord},	#{startTime},	#{endTime},		#{icon}
+		)
+	</insert>
+	
+	<!-- 2.查询活动 -->
+	<select id="queryLottery" parameterType="LotteryDto" resultType="LotteryDto">
+		select * from t_lottery_activity where 1=1
+		<if test="codeWord != null">
+			and codeWord = #{codeWord}
+		</if>
+		<if test="no != null">
+			and no = #{no}
+		</if>
+		
+	</select>
+	
+	<!-- 3.添加抽奖活动人 -->
+	<insert id="addLotteryUser" parameterType="PatientDto">
+		insert into t_lottery_user 
+		(
+			patientId, 		lotteryNo, 		phone, 		weixinOpenId, 		status,		createTime
+		) 
+		values 
+		(
+			#{patientId},		#{lotteryNo},	#{phone},	#{weixinOpenId},	#{status}, 	#{createTime}
+		)
+	</insert>
+	
+	<!-- 4.查询抽奖用户 -->
+	<select id="queryLotteryUser" parameterType="PatientDto" resultType="PatientDto">
+		select * from t_lottery_user
+		where lotteryNo = #{lotteryNo}
+		<if test="patientId != null">
+			and patientId = #{patientId}
+		</if>
+		<if test="weixinOpenId != null">
+			and weixinOpenId = #{weixinOpenId}
+		</if>
+	</select>
+	
+	<!-- 5.查询参与活动的人数 -->
+	<select id="queryLotteryUserCount" parameterType="PatientDto" resultType="PatientDto">
+		select * from t_lottery_user where lotteryNo = #{lotteryNo}
+		<if test="status != null and status != ''">
+			and status = #{status}
+		</if>
+	</select>
+	
+	<!-- 6.修改部分用户抽奖状态 -->
+	<update id="updateLotteryUserStatus">
+		update t_lottery_user set status = 1
+			where id in 
+		 <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+             #{id}
+         </foreach>
+	</update>
+	
+	<!-- 7.修改部分用户抽奖状态 -->
+	<update id="resetLotteryUserStatus">
+		update t_lottery_user set status = 0
+			where id in 
+		 <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+             #{id}
+         </foreach>
+	</update>
+	
+	<!-- 8.添加中奖详情 -->
+	<insert id="addLotteryDetail" parameterType="LotteryDetailDto">	
+		insert into t_lottery_activity_detail
+		(
+			id, 		no, 		level, 		prizeName, 		phone, 		weixinOpenId
+		)
+		values 
+		(
+			#{id},		#{no},		#{level},	#{prizeName},	#{phone},	#{weixinOpenId}
+		)
+	</insert>
+	
+	<!-- 9.查询抽奖用户 -->
+	<select id="queryGetLotteryUser" resultType="PatientDto">
+		select * from t_lottery_user 
+		where id in
+		 <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+             #{id}
+         </foreach>
+	</select>
+	
+	<!-- 10.删除抽奖记录 -->
+	<delete id="deleteLotteryDetail" parameterType="LotteryDetailDto">
+		delete from t_lottery_activity_detail
+		where 
+		no = #{no} and level = #{level}
+	</delete>
+	
+	<!-- 11.查询最新的活动 -->
+	<select id="queryNewLottery" parameterType="LotteryDto" resultType="LotteryDto">
+		select * from t_lottery_activity ORDER BY startTime DESC LIMIT 1
+	</select>
+	
+	<!-- 12.查询中奖纪录 -->
+	<select id="queryResultHis" parameterType="PatientDto" resultType="PatientDto">	
+		select a.phone, a.`level`, a.prizeName, a.weixinOpenId, a.createTime, b.no lotteryNo, b.theme, b.`name`, b.codeWord, b.startTime, b.status from t_lottery_activity_detail a
+		left join t_lottery_activity b on a.`no` = b.`no`
+			where a.`no` = #{lotteryNo} and a.phone = #{phone}
+	</select>
+	
+	<!-- 13.查询用户参与的活动 -->
+	<select id="queryMeJoinLottery" parameterType="PatientDto" resultType="PatientDto">
+		select a.lotteryNo, a.phone, b.codeWord, b.theme, b.`name`, b.startTime, b.status from t_lottery_user a 
+		left join t_lottery_activity b on a.lotteryNo = b.`no`
+		where phone = #{phone} and patientId = #{id}
+		<if test="status != null">
+			and b.status = #{status}
+		</if>
+	</select>
+	
+	<!-- 14.查询指定活动最后一次抽奖时间 -->
+	<select id="queryLotteryTimeRecord" parameterType="LotteryTimeRecordDto" resultType="LotteryTimeRecordDto">
+		select * from t_lottery_time_record where lotteryNo = #{lotteryNo} order by lotteryTime desc limit 1
+	</select>
+	
+	<!-- 15.退出抽奖 -->
+	<delete id="exitLottery" parameterType="PatientDto">
+		delete from t_lottery_user where lotteryNo = #{lotteryNo} and patientId = #{patientId}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.consult.ConsultDao">
+	<select id="queryMyConsult" parameterType="ConsultDto" resultType="ConsultDto">
+		select distinct(a.id), a.doctorId, a.patientId, a.consultName, a.patientRelativeId, a.symptoms, a.symptomsImages, a.createTime, a.startTime,
+		a.endTime, a.acceptStatus, a.consultStatus, a.refuseReason, a.payStatus, a.gender, a.age, a.type,
+		b.name doctorName, b.departmentId, b.head doctorHead, b.skill, c.name hospitalName, d.name titleName, 
+		e.name patientRelativeName, f.name departmentName, g.satisfaction, g.commentContent evaluation
+		from t_patient_consult a 
+		left join t_doctor b on a.doctorId = b.id
+		left join t_hospital c on b.hospitalId = c.id
+		left join t_doctor_title d on b.titleId = d.id
+		left join t_patient_relative e on a.patientRelativeId = e.id
+		left join t_department f on  b.departmentId = f.id
+		left join t_doctor_comment g on a.id = g.serviceId
+		<where>
+			a.patientId = #{patientId}
+			<if test="doctorId !=null">
+				and a.doctorId = #{doctorId}
+			</if>
+			and payStatus != 0
+			and displayStatus = 1
+			and consultStatus != 3
+			<if test="status != null and status == 0">
+				and (consultStatus = 0 or consultStatus = 1)
+			</if>
+			<if test="status != null and status == 1">
+				and consultStatus = 2
+			</if>
+            <if test="type != null">
+                and a.type = #{type} 
+            </if>
+            <if test="isCurDate == 0">
+            	and a.createTime > CURDATE()
+            </if>
+		</where>
+		group by a.id
+		order by a.createTime desc
+	</select>
+	
+	<select id="queryMyFreeConsult" parameterType="ConsultDto" resultType="ConsultDto">
+		select a.*, b.name doctorName, b.head doctorHead, c.name hospitalName, d.name titleName, e.name patientRelativeName
+		from t_patient_consult a left join t_doctor b on a.doctorId = b.id
+		left join t_hospital c on b.hospitalId = c.id
+		left join t_doctor_title d on b.titleId = d.id
+		left join t_patient_relative e on a.patientRelativeId = e.id
+		<where>
+			a.patientId = #{patientId}
+			and a.type = #{type}
+		</where>
+		order by a.createTime desc
+	</select>
+	
+	<select id="queryMyConsulting" parameterType="ConsultDto" resultType="ConsultDto">
+		select * from t_patient_consult 
+		<where>
+			patientId = #{patientId}
+            <if test="doctorId != null">
+                and doctorId = #{doctorId}
+            </if>
+			and consultStatus = 1
+			and acceptStatus = 1
+			and payStatus = 1
+		</where>
+		order by startTime desc
+	</select>
+	
+	<insert id="createMyConsult" parameterType="ConsultDto">
+		insert into t_patient_consult
+		(id, doctorId, patientId, consultName, symptoms, createTime, payStatus, symptomsImages, acceptStatus, consultStatus, gender, age, type, displayStatus)
+		values
+		(#{id}, #{doctorId}, #{patientId}, #{consultName}, #{symptoms}, #{createTime}, #{payStatus}, #{symptomsImages}, #{acceptStatus}, #{consultStatus}, #{gender}, #{age}, #{type}, #{displayStatus})
+	</insert>
+	
+	<select id="queryConsultById" parameterType="ConsultDto" resultType="ConsultDto">
+		select a.id, a.doctorId, a.patientId, a.consultName, a.patientRelativeId, a.symptoms, a.symptomsImages, a.createTime, a.startTime,
+		a.endTime, a.acceptStatus, a.consultStatus, a.refuseReason, a.payStatus, a.gender, a.age, a.type, a.outTradeNo,
+		b.name doctorName, b.departmentId departmentId, b.hospitalId hospitalId, b.titleId titleId, b.experience doctorExperience, b.head doctorHead, g.satisfaction, g.commentContent evaluation, g.commentTime evaluateTime, d.name departmentName,
+		h.`name` hospitalName, t.`name` titleName
+        from t_patient_consult a 
+		left join t_doctor b on a.doctorId = b.id
+		left join t_doctor_comment g on a.id = g.serviceId
+		left join t_department d on d.id = b.departmentId
+        LEFT JOIN t_hospital h on h.id = b.hospitalId
+        LEFT JOIN t_doctor_title t on t.id = b.titleId
+		<where>
+			a.id = #{id}
+		</where>
+	</select>
+	
+	<select id="queryBestEvaluationByDoctorId" parameterType="ConsultDto" resultType="ConsultDto">
+		select a.satisfaction, a.evaluation, b.phone patientPhone, b.nickname patientNickname, b.name patientName
+		from t_patient_consult a left join t_patient b on a.patientId = b.id
+		<where>
+			doctorId = #{doctorId}
+			and a.satisfaction is not null
+		</where>
+		order by satisfaction desc
+		limit 1
+	</select>
+	
+	<update id="evaluateMyConsult" parameterType="ConsultDto">
+		update t_patient_consult
+		set evaluation = #{evaluation}, satisfaction = #{satisfaction}, evaluateTime = #{evaluateTime}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	<update id="updatePayStatus" parameterType="ConsultDto">
+		update t_patient_consult
+		set payStatus = #{payStatus}
+		<if test="outTradeNo != null">
+			,outTradeNo = #{outTradeNo}
+		</if>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<select id="queryEvaluationsByDoctorId" parameterType="ConsultDto" resultType="ConsultDto">
+		select a.id, a.symptoms, a.satisfaction, a.evaluation, b.phone patientPhone, b.nickname patientNickname, b.name patientName
+		from t_patient_consult a left join t_patient b on a.patientId = b.id
+		<where>
+			doctorId = #{doctorId}
+			and a.consultStatus = 2
+			and a.evaluation is not null
+		</where>
+		order by evaluateTime desc
+	</select>
+	
+	<update id="deleteConsult" parameterType="ConsultDto">
+		update t_patient_consult set displayStatus = 0
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<delete id="deleteFreeConsult" parameterType="ConsultDto">
+		delete from t_patient_consult where consultStatus = 0 and type = 0 and createTime &lt;= #{startTime}
+	</delete>
+	
+	<update id="cancelConsult" parameterType="ConsultDto">
+		update t_patient_consult set consultStatus = 3
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<!-- 根据服务ID查询未读消息数量 -->
+	<select id="queryOfflineMessageCountBySrviceId" parameterType="ChatDto" resultType="java.lang.Integer">
+		select count(*) from t_chat_his
+		<where>
+			serviceId = #{serviceId} and readStatus = 0
+		</where>
+	</select>
+	
+	<!-- 查询用户离线消息记录数 -->
+	<select id="queryNoReadMessageCount" parameterType="ChatDto" resultType="ChatDto">
+		select count(*) noReadMessage, serviceId from 
+			(select serviceId from t_chat_his where receiver = #{receiver} and readStatus=0) a GROUP BY serviceId;
+	</select>
+	
+	<!-- 查询未结束的咨询记录 -->
+	<select id="queryConsultNoEnd" parameterType="ConsultDto" resultType="ConsultDto">
+		select * from t_patient_consult 
+		<where>
+			patientId = #{patientId} and (consultStatus = 0 or consultStatus = 1)
+		</where>
+	</select>
+    
+    <!-- 更改咨询状态 -->
+    <update id="updateConsultStatus" parameterType="ConsultDto">
+        update t_patient_consult set consultStatus = 2, endTime = now()
+        <where>
+        	1=1
+        	<if test="startTime != null">
+	            <if test="consultStatus != null">
+	            	and consultStatus = #{consultStatus}
+	            </if>
+	            and startTime &lt;= #{startTime}
+            </if>
+            <if test="id != null">
+            	and id = #{id}
+            </if>
+        </where>
+    </update>
+    
+    <!-- 根据发送类型和服务ID查询聊天记录 -->
+    <select id="queryChatBySendTypeAndServiceId" parameterType="ChatDto" resultType="ChatDto">
+    	select * from t_chat_his where senderType = 1 and receiverType = 2 and serviceId = #{serviceId} 
+    </select>
+    
+    <!-- 查询未结束的聊天咨询 -->
+    <select id="queryMyConsultNoEnd" parameterType="ConsultDto" resultType="ConsultDto">
+		select * from t_patient_consult 
+		<where>
+			patientId = #{patientId}
+            <if test="doctorId != null">
+                and doctorId = #{doctorId}
+            </if>
+			and (consultStatus = 0 or consultStatus = 1)
+			and payStatus = 1
+		</where>
+		order by startTime desc
+	</select>
+	
+	<!-- 查询已经过期的咨询 -->
+	<select id="queryConsultAlreadyExpired" parameterType="ConsultDto" resultType="ConsultDto">
+		select a.id, a.doctorId, a.patientId, a.patientRelativeId,b.name doctorName from t_patient_consult a 
+		left join t_doctor b on a.doctorId = b.id 
+		<where>
+			<if test="consultStatus != null">
+				consultStatus = #{consultStatus} and 
+			</if>
+            startTime &lt;= #{startTime}
+        </where>
+	</select>
+	
+	<!-- 更改指定服务ID未读消息为已读 -->
+	<update id="updateReadStatusByServiceId" parameterType="ChatDto">
+		update t_chat_his set readStatus = 1 
+			where readStatus=0 and serviceId = #{serviceId}
+	</update>
+	
+	<!-- 更改过期咨询服务的未读消息为已读 -->
+	<update id="updateReadStatusByBatchServiceId" parameterType="ConsultDto">
+		update t_chat_his set readStatus = 1 where readStatus = 0 and serviceId in 
+		(
+			select id from t_patient_consult 
+				where
+	        consultStatus = 1
+	        and startTime &lt;= #{startTime}
+	    )
+	</update>
+	
+	<!-- 查询1小时后医生未接受的咨询 -->
+	<select id="queryConsultDoctorNoAccept" parameterType="ConsultDto" resultType="ConsultDto">				
+		select a.*, b.name doctorName, c.phone patientPhone from t_patient_consult a
+		left join t_doctor b on a.doctorId = b.id
+		left join t_patient c on a.patientId = c.id
+		where 
+		a.acceptStatus != 1 
+		and (a.consultStatus = 0 or a.consultStatus = 2)
+		and a.payStatus=1 
+		and a.displayStatus = 1
+		and a.type = 1
+		and DATE_ADD(`createTime`,INTERVAL 1 HOUR) &lt; NOW()
+	</select>
+	
+	<!-- 退款成功修改咨询状态 -->
+	<update id="updateConsultRefundSuccess" parameterType="ConsultDto">
+		update t_patient_consult set 
+		payStatus = 3, 
+		acceptStatus = 3, 
+		consultStatus = 2 , 
+		endTime = now() 
+		where 
+		id = #{id}
+	</update>
+</mapper>

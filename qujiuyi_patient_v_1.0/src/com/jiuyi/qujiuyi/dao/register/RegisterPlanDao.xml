@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.register.RegisterPlanDao">
+	<select id="getDoctorRegisterPlan" parameterType="RegisterPlanDto" resultType="RegisterPlanDto">
+		select id, doctorId, registerDate, timeZone, price, 
+		(registerCount - (select count(*) from t_patient_register b where b.planId = a.id)) as registerCount
+		from t_doctor_register_plan a
+		<where>
+			doctorId = #{doctorId}
+			and status = 1
+			and registerDate &gt;= #{startTime}
+			and registerDate &lt;= #{endTime}
+		</where>
+	</select>
+	
+	<select id="getRegisterPlanById" parameterType="RegisterPlanDto" resultType="RegisterPlanDto">
+		select id, doctorId, registerDate, timeZone, price, status,
+		(registerCount - (select count(*) from t_patient_register b where b.planId = a.id)) as registerCount
+		from t_doctor_register_plan a
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<!-- 挂号成功增加已经挂号的数量 -->
+	<update id="updateAlreadyRegisterCountUp" parameterType="RegisterPlanDto">
+		update t_doctor_register_plan set 
+			alreadyRegister = alreadyRegister+1 
+			where 
+				id = #{id} 
+			and 
+				alreadyRegister &lt; registerCount
+	</update>
+	
+	<!-- 取消挂号减少已经挂号的数量 -->
+	<update id="updateAlreadyRegisterCountDown" parameterType="PatientRegisterDto">
+		update t_doctor_register_plan set 
+			alreadyRegister = alreadyRegister-1 
+			where 
+				id = (select planId from t_patient_register where id = #{id}) 
+			and 
+				alreadyRegister &gt; 0
+	</update>
+	
+	<!-- 根据医生挂号计划ID减少已挂号数量 -->
+	<update id="updateAlreadyRegisterCountDownByPlanId" parameterType="RegisterPlanDto">
+		update t_doctor_register_plan set 
+			alreadyRegister = alreadyRegister-1 
+		<where>
+			id = #{id} and alreadyRegister &gt; 0
+		</where>
+	</update>
+</mapper>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.prescription.PrescriptionDetailDao">
+	<!-- 1.根据处方ID查询处方清单 -->
+	<select id="queryPrescriptionDetailByPrescriptionId" parameterType="PrescriptionDetailDto" resultType="PrescriptionDetailDto">
+		select * from t_prescription_detail where prescriptionId = #{prescriptionId}
+	</select>
+	
+</mapper>

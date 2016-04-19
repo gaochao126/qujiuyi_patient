@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.department.DepartmentDao">
+	<select id="queryDepartmentList" parameterType="DepartmentDto" resultType="DepartmentDto">
+		select * from 
+		<if test="hospitalId == null and queryType != 3">
+			t_department
+		</if>
+		<if test="hospitalId != null or queryType == 3">
+			t_hospital_department
+		</if>
+		<where>
+			<if test="hospitalId != null">
+				hospitalId = #{hospitalId}
+			</if>
+			<if test="queryType!= null and queryType == 1">
+				and parentId = id
+			</if>
+			<if test="queryType!= null and queryType == 2">
+				<if test="parentId != null">
+					and parentId = #{parentId} 
+				</if>
+				and parentId != id
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryDepartmentById" parameterType="DepartmentDto" resultType="DepartmentDto">
+		select * from
+		<if test="hospitalId == null">
+			t_department
+		</if>
+		<if test="hospitalId != null">
+			t_hospital_department
+		</if>
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<select id="getRandomDepartment" resultType="DepartmentDto">
+		select id, name from t_department 
+		where 
+		id >= (select ceil(rand() * (select max(id) from t_department where parentId = id))) 
+		and parentId = id 
+		order by id 
+		limit 2
+	</select>
+	
+	<select id="getHospitalDepartmentByHospitalDoctor" parameterType="DepartmentDto" resultType="DepartmentDto">
+		select b.* from t_hospital_doctor a left join t_department b on a.departmentId = b.id
+		<where>
+			a.id = #{doctorId}
+		</where>
+	</select>
+</mapper>

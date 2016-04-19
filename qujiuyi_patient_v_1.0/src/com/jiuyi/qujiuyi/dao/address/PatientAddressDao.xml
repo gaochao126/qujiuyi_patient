@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.address.PatientAddressDao">
+	<insert id="createPatientAddr" parameterType="PatientAddressDto">
+		insert into t_patient_addr
+		(patientId, name, phone, provinceId, cityId, townId, addr, createTime, updateTime, isDefault)
+		values
+		(#{patientId}, #{name}, #{phone}, #{provinceId}, #{cityId}, #{townId}, #{addr}, now(), now(), #{isDefault})
+	</insert>
+	
+	<delete id="deletePatientAddr" parameterType="PatientAddressDto">
+		delete from t_patient_addr
+		<where>
+			id = #{id}
+			and patientId = #{patientId}
+		</where>
+	</delete>
+	
+	<update id="updatePatientAddr" parameterType="PatientAddressDto">
+		update t_patient_addr
+		set updateTime = now(), 
+			name = #{name}, 
+			phone = #{phone}, 
+			addr = #{addr}, 
+			provinceId = #{provinceId}, 
+			cityId = #{cityId}, 
+			townId = #{townId},
+			isDefault = #{isDefault}
+		<where>
+			id = #{id}
+			and patientId = #{patientId}
+		</where>
+	</update>
+	
+	<select id="queryPatientAddrList" parameterType="PatientAddressDto" resultType="PatientAddressDto">
+		select a.*, b.provinceName, c.cityName, d.townName from t_patient_addr a
+		left join t_province b on a.provinceId = b.provinceId
+		left join t_city c on a.cityId = c.cityId
+		left join t_town d on a.townId = d.townId
+		<where>
+			patientId = #{patientId}
+		</where>
+		order by isDefault desc, createTime asc
+	</select>
+	
+	<select id="queryPatientAddr" parameterType="PatientAddressDto" resultType="PatientAddressDto">
+		select a.*, b.provinceName, c.cityName, d.townName from t_patient_addr a
+		left join t_province b on a.provinceId = b.provinceId
+		left join t_city c on a.cityId = c.cityId
+		left join t_town d on a.townId = d.townId
+		<where>
+			patientId = #{patientId}
+			and id=#{id}
+		</where>
+	</select>
+	
+	<update id="updateDefaultValByPatientId">
+		update t_patient_addr set isDefault = 0
+		<where>
+			patientId = #{patientId}
+		</where>
+	</update>
+</mapper>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.collect.PatientCollectDao">
+	<insert id="collectDoctor" parameterType="PatientCollectDto">
+		insert into t_patient_collect(patientId, doctorId, collectTime, doctorType) 
+		values(#{patientId}, #{doctorId}, #{collectTime}, #{doctorType})
+	</insert>
+	
+	<select id="queryCollectByPatientIdAndDoctorId"  parameterType="PatientCollectDto" resultType="PatientCollectDto">
+		select * from t_patient_collect
+		<where>
+			patientId = #{patientId} 
+			and doctorId = #{doctorId}
+			and doctorType = #{doctorType}
+		</where>
+	</select>
+	
+	<select id="queryCollectDoctorList"  parameterType="PatientCollectDto" resultType="PatientCollectDto">
+		select a.id, a.collectTime, a.doctorId, a.doctorType, b.name doctorName, b.head doctorHeadPortrait, 
+		b.departmentName, d.id hospitalId, d.name hospitalName, e.name titleName, b.skill, b.experience,
+		(select count(*) from t_patient_collect f where f.doctorId = a.doctorId and f.doctorType = a.doctorType) doctorCollectedCount
+		from t_patient_collect a join
+		(
+			(
+				select x.id, x.name, x.head, x.departmentId, x.hospitalId, x.titleId, 1 doctorType, x.skill, x.experience, y.name departmentName
+				from t_doctor x join t_department y on x.departmentId = y.id
+			) 
+				union all 
+			(
+				select x.id, x.name, x.head, x.departmentId, x.hospitalId, x.titleId, 0 doctorType, x.skill, x.experience, y.name departmentName
+				from t_hospital_doctor x join t_hospital_department y on x.departmentId = y.id
+			)
+		) b  on a.doctorId = b.id and a.doctorType = b.doctorType
+		join t_hospital d on b.hospitalId = d.id
+		join t_doctor_title e on b.titleId = e.id
+		<where>
+		    patientId = #{patientId} 
+		    order by a.collectTime desc
+		</where>
+	</select>
+	
+	<delete id="deleteCollectDoctor">
+		delete from t_patient_collect
+		<where>
+			patientId = #{patientId} 
+			and doctorId = #{doctorId}
+			and doctorType = #{doctorType}
+		</where>
+	</delete>
+	
+	<!-- 收藏医院 -->
+	<select id="collectHospital" parameterType="PatientCollectDto">
+		insert into t_patient_collect_hospital (patientId, hospitalId, collectTime) 
+		values(#{patientId}, #{hospitalId}, #{collectTime})
+	</select>
+	
+	<!-- 删除收藏医院 -->
+	<delete id="deleteColectHospital" parameterType="PatientCollectDto">
+		delete from t_patient_collect_hospital
+		<where>
+			patientId = #{patientId}
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="hospitalId != null">
+				and hospitalId = #{hospitalId}
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 获取收藏医院列表 -->
+	<select id="queryCollectHospitalList" parameterType="PatientCollectDto" resultType="PatientCollectDto">
+		select a.*, b.`name` hospitalName, b.`level`, b.head  from t_patient_collect_hospital a 
+		left join t_hospital b on a.hospitalId = b.id
+		where 1
+		<if test="patientId != null">
+			and a.patientId = #{patientId}
+		</if>
+		<if test="hospitalId != null">
+			and a.hospitalId = #{hospitalId}
+		</if>
+	</select>
+</mapper>

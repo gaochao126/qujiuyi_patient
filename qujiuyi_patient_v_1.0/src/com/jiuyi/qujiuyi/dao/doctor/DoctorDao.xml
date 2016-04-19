@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.doctor.DoctorDao">
+	<select id="queryDoctorListByDepartmentId" parameterType="DoctorDto" resultType="DoctorDto">
+		select a.id, a.name, a.head, c.name hospitalName, a.hospitalId, b.id departmentId, b.name departmentName, a.recommendScore, 
+		(select count(*) from t_patient_consult f where a.id = f.doctorId) attendanceCount, e.name titleName, a.skill, a.experience 
+		from t_doctor a left join t_department b on a.departmentId = b.id
+		left join t_hospital c on a.hospitalId = c.id
+		left join t_doctor_title e  on a.titleId = e.id
+		<if test="queryType == 1">
+			<where>
+				and b.id in (select id from t_department f where f.parentId = #{departmentId} and f.id &lt;&gt; #{departmentId})
+				and a.status = 3
+			</where>
+		</if>
+		<if test="queryType == 2">
+			<where>
+				b.id = #{departmentId}
+				and a.status = 3
+			</where>
+		</if>
+	</select>
+	
+	<select id="queryDoctorById" parameterType="DoctorDto" resultType="DoctorDto">
+		select * from t_doctor
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<select id="getRandomDoctorByDepartment" parameterType="DoctorDto" resultType="DoctorDto">
+		select * from
+		(
+			select a.id, a.name, a.head, c.name hospitalName, a.hospitalId, b.id departmentId, b.name departmentName, a.recommendScore, 
+			(select count(*) from t_patient_consult f where a.id = f.doctorId) attendanceCount, e.name titleName, a.skill, a.experience 
+			from t_doctor a left join t_department b on a.departmentId = b.id
+			left join t_hospital c on a.hospitalId = c.id
+			left join t_doctor_title e  on a.titleId = e.id
+			where exists(select * from t_department d where d.id = b.parentId)
+			and a.status = 3
+		) x
+		where 
+			x.id >= (
+				select ceil(rand() * (select max(y.id) from (
+					select a.id 
+					from t_doctor a left join t_department b on a.departmentId = b.id
+					where exists(select * from t_department d where d.id = b.parentId)
+					and a.status = 3
+				) y ))
+			)
+			order by x.id 
+			limit 2
+	</select>
+	
+	<select id="queryDoctorInfo"  parameterType="DoctorDto" resultType="DoctorDto">
+		select a.id, a.name, a.head, c.name hospitalName, a.hospitalId, b.id departmentId, b.name departmentName, a.recommendScore, 
+		(select count(*) from t_patient_consult f where a.id = f.doctorId) attendanceCount, e.name titleName, a.skill, a.experience,
+		(select number from t_yiyuanyizhen g where a.id = g.doctorId and g.status = 1) yiyuanyizhenNumber
+		from t_doctor a left join t_department b on a.departmentId = b.id
+		left join t_hospital c on a.hospitalId = c.id
+		left join t_doctor_title e  on a.titleId = e.id
+		<where>
+			a.id = #{id}
+		</where>
+	</select>
+	
+	<select id="queryOneYuanDoctorList"  parameterType="DoctorDto" resultType="DoctorDto">
+		select a.id, a.name, a.head, c.name hospitalName, b.name departmentName, a.recommendScore, d.name titleName, a.skill, e.number yiyuanyizhenNumber,
+	    g.price consultPrice
+		from t_yiyuanyizhen e left join t_doctor a on e.doctorId = a.id
+		left join t_department b on a.departmentId = b.id
+		left join t_hospital c on a.hospitalId = c.id
+		left join t_doctor_title d  on a.titleId = d.id
+		left join t_doctor_chat g on e.doctorId = g.doctorId
+		<where>
+			e.status = 1 
+			and e.number > 0
+			and exists(select * from t_doctor_chat f where f.doctorId = e.doctorId and f.status = 1)
+		</where>
+	</select>
+	
+	<select id="queryOneYuanDoctorById" parameterType="DoctorDto" resultType="DoctorDto">
+		select a.*, b.number yiyuanyizhenNumber
+		from t_doctor a left join t_yiyuanyizhen b on a.id = b.doctorId
+		<where>
+			a.id = #{id}
+			and b.status = 1
+			and exists(select * from t_doctor_chat c where c.doctorId = a.id and c.status = 1)
+		</where>
+	</select>
+	
+	<update id="updateOneYuanNumberById"  parameterType="DoctorDto">
+		update t_yiyuanyizhen set number = number - 1
+		<where>
+			doctorId = #{id}
+		</where>
+	</update>
+	
+	<select id="searchDoctors" parameterType="DoctorDto" resultType="DoctorDto">
+		select a.id, a.name, a.head, c.name hospitalName, a.hospitalId, b.id departmentId, b.name departmentName, a.recommendScore, 
+		(select count(*) from t_patient_consult f where a.id = f.doctorId) attendanceCount, e.name titleName, a.skill, a.experience 
+		from t_doctor a left join t_department b on a.departmentId = b.id
+		left join t_hospital c on a.hospitalId = c.id
+		left join t_doctor_title e  on a.titleId = e.id
+		<where>
+			<if test="name != null and name != ''">
+		    	locate(#{name}, a.name) > 0
+			</if>
+			and a.status = 3
+		</where>
+	</select>
+	
+	<select id="queryDoctorByPhone" parameterType="DoctorDto" resultType="DoctorDto">
+		select * from t_doctor 
+		<where>
+			phone = #{doctorPhone}
+		</where>
+	</select>
+	
+	<update id="upadateDoctorAccountComming"  parameterType="DoctorDto">
+		update t_doctor_account set coming = (coming + #{accountComing})
+		<where>
+			doctorId = #{id}
+		</where>
+	</update>
+	
+	<select id="getHospitalDoctors" parameterType="DoctorDto" resultType="DoctorDto">
+		<if test="queryType == null or queryType == 2">
+			select a.*, b.name titleName, b.id titleId, c.name departmentName, c.parentId parentDepartmentId, d.name hospitalName 
+			from t_hospital_doctor a
+			left join t_doctor_title b on a.titleId = b.id
+			left join t_hospital_department c on a.departmentId = c.id
+			left join t_hospital d on a.hospitalId = d.id
+			<where>
+				<if test="hospitalId != null">
+					a.hospitalId = #{hospitalId}
+				</if>
+				<if test="departmentId != null">
+					and a.departmentId = #{departmentId}
+				</if>
+			</where>
+			order by a.canBeRegister desc,a.titleId
+		</if>
+		<if test="queryType != null and queryType == 1">
+			select a.*, b.name titleName, b.id titleId, c.name departmentName, c.parentId parentDepartmentId, d.name hospitalName
+			from t_hospital_doctor a
+			left join t_doctor_title b on a.titleId = b.id
+			left join t_hospital_department c on a.departmentId = c.id
+			left join t_hospital d on a.hospitalId = d.id
+			<where>
+				<if test="hospitalId != null">
+					a.hospitalId = #{hospitalId}
+				</if>
+				<if test="departmentId != null">
+					and a.departmentId in (select id from t_hospital_department c where c.parentId = #{departmentId} and c.id &lt;&gt; #{departmentId})
+				</if>
+			</where>
+			order by a.canBeRegister desc,a.titleId
+		</if>
+	</select>
+	
+	<select id="getHospitalDoctorDetail" parameterType="DoctorDto" resultType="DoctorDto">
+		select a.*, b.name titleName, c.name hospitalName, d.name departmentName 
+		from t_hospital_doctor a
+		left join t_doctor_title b on a.titleId = b.id
+		left join t_hospital c on a.hospitalId = c.id
+		left join t_hospital_department d on a.departmentId = d.id
+		<where>
+			a.id = #{id}
+		</where>
+	</select>
+	
+	<select id="getFamousDoctors" parameterType="DoctorDto" resultType="DoctorDto">
+		<if test="doctorType == null or doctorType == 1">
+			select * from
+			(
+				select a.id, a.name, a.head, c.name hospitalName, a.hospitalId, b.id departmentId, b.name departmentName, a.recommendScore, e.name titleName, a.skill, a.experience 
+				from t_doctor a left join t_department b on a.departmentId = b.id
+				left join t_hospital c on a.hospitalId = c.id
+				left join t_doctor_title e  on a.titleId = e.id where a.`status`=3
+				
+			) x
+			where 
+				x.id >= (
+					select ceil(rand() * (select max(y.id) from (
+						select id from t_doctor where status = 3
+					) y ))
+				)
+				order by x.id 
+				limit 7
+		</if>
+		<if test="doctorType != null and doctorType == 0">
+			select * from
+			(
+				select a.id, a.name, a.head, c.name hospitalName, a.hospitalId, b.id departmentId, b.name departmentName, e.name titleName, a.skill, a.experience 
+				from t_hospital_doctor a 
+				left join t_hospital_department b on a.departmentId = b.id
+				left join t_hospital c on a.hospitalId = c.id
+				left join t_doctor_title e  on a.titleId = e.id
+			) x
+			where 
+				x.id >= (
+					select ceil(rand() * (select max(y.id) from (
+						select id from t_hospital_doctor
+					) y ))
+				)
+				order by x.id 
+				limit 8
+		</if>
+	</select>
+	
+	<select id="queryDoctorByConditions" parameterType="DoctorDto" resultType="DoctorDto">
+		select * from 
+		(
+			(
+				select 1 doctorType, a.id, a.name, a.head, c.name hospitalName, a.hospitalId, 0 canBeRegister,a.titleId,b.id departmentId, b.name departmentName, b.icon departmentIcon, a.recommendScore, e.name titleName, a.skill, a.experience 
+				from t_doctor a 
+				left join t_department b on a.departmentId = b.id
+				left join t_hospital c on a.hospitalId = c.id
+				left join t_doctor_title e  on a.titleId = e.id
+				<where>
+				    a.status = 3
+					<if test="departmentId != null">
+						and 
+                        (
+                            a.departmentId = #{departmentId}
+						    or a.departmentId in (select id from t_department f where f.parentId = #{departmentId} and f.id &lt;&gt; #{departmentId})
+                        )
+					</if>
+					
+				</where>
+			)
+			union all
+			(
+				select 0 doctorType, a.id, a.name, a.head, c.name hospitalName, a.hospitalId, a.canBeRegister,a.titleId, b.id departmentId, b.name departmentName,b.icon departmentIcon, 0 recommendScore, e.name titleName, a.skill, a.experience 
+				from t_hospital_doctor a 
+				left join t_hospital_department b on a.departmentId = b.id
+				left join t_hospital c on a.hospitalId = c.id
+				left join t_doctor_title e  on a.titleId = e.id
+				<where>
+					<if test="departmentId != null">
+						<if test="departmentId &lt; 110">
+							 departmentId in 
+								(select id from t_hospital_department where standardNameId in 
+									(select id from t_hospital_department where standardNameId = #{departmentId}))
+						</if>
+						<if test="departmentId &gt; 110">
+							departmentId = #{departmentId} or  departmentId in 
+								(select id from t_hospital_department where parentId = #{departmentId})
+						</if>
+						and
+					</if>
+                     a.head is not null
+				</where>
+			)
+		) as x
+		<where>
+			<if test="doctorType != null">
+				x.doctorType = #{doctorType}
+			</if>
+			<if test="name != null and name != ''">
+				and locate(#{name}, x.name) > 0
+			</if>
+			<if test="hospitalId != null">
+				and x.hospitalId = #{hospitalId}
+			</if>
+			<if test="titleId != null">
+		    	and 
+		    	(
+			    	x.titleId = #{titleId}
+			    	<if test="first != null">
+						or x.titleId = #{first} 
+					</if>
+					<if test="second != null">
+						or x.titleId = #{second}
+					</if>
+					<if test="third != null">
+						or x.titleId = #{third}
+					</if>
+					<if test="four != null">
+						or x.titleId = #{four}
+					</if>
+				)
+		    </if>      
+		</where>
+		order by x.canBeRegister desc,x.titleId,x.id
+	</select>
+	
+	<!-- 查询线下医生挂号计划总数 -->
+	<select id="queryOfflineDoctorRegisterPlanCount" parameterType="DoctorDto" resultType="java.lang.Integer">
+		select SUM(registerCount - alreadyRegister) from t_doctor_register_plan    
+			where doctorId = #{id} and registerDate > #{nowDate}
+	</select>
+</mapper>

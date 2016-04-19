@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.scancode.ScanCodeDao">
+	<!-- 1.添加运营人员工作量记录 （关注微信公众号）-->
+	<insert id="insertWorkLoad" parameterType="ScanCodeDto">
+		insert into t_scan_code_workload 
+		(weixinOpenId, 			adminId, 			createTime) 
+		values 
+		(#{weixinOpenId},		#{adminId},         now())
+	</insert>
+	
+	<!-- 2.删除运营人员工作量记录 -->
+	<delete id="deleteWorkLoad" parameterType="ScanCodeDto">
+		delete from t_scan_code_workload where id = #{id}
+	</delete>
+	
+	<!-- 3.查询工作量 -->
+	<select id="queryWorkLoad" parameterType="ScanCodeDto" resultType="ScanCodeDto">
+		select * from t_scan_code_workload where 1
+		<if test="weixinOpenId != null">
+			and weixinOpenId = #{weixinOpenId}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.refund.RefundDao">
+	<!-- 1.添加退款记录 -->
+	<insert id="insertRefund" parameterType="RefundDto">
+		insert into t_refund
+		(
+			id, 	outTradeNo, 	status, 	startTime,		orderType	 
+		)
+		values 
+		(
+			#{id},	#{outTradeNo},  #{status},	NOW(),		#{orderType}		
+		)
+	</insert>
+	
+	<!-- 2.修改退款状态 -->
+	<update id="updateRefund" parameterType="RefundDto">
+		update t_refund set endTime = NOW(), status = #{status} where id = #{id}
+	</update>
+	
+</mapper>
