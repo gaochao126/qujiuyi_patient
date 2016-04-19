@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.pay.BankDao">
+	<select id="queryBanks" resultType="BankDto">
+		select id, bankName, bankNo, logoUrl, supportType from t_bank
+		<where>
+			status = 1
+		</where>
+	</select>
+</mapper>

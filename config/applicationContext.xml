@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx" 
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/jdbc 
+        http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+     
+    <context:component-scan base-package="com.jiuyi.qujiuyi.*"/>
+    <!-- 启用spring注解支持 -->
+    <context:annotation-config />
+    <tx:annotation-driven />
+
+    <!--配置数据源属性文件引入sqlServer.properties  -->      
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">    
+        <property name="location">    
+            <value>/WEB-INF/classes/mysql.properties</value>    
+        </property>    
+    </bean>
+    
+    <!-- *******************************start*********************** -->
+	<!-- =============================去就医（数据库配置）===================== -->
+
+    <!--配置数据源  -->   
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">       
+        <property name="driverClassName" value="${jdbc.driver}"/>  
+        <property name="url" value="${jdbc.url}"/>  
+        <property name="username" value="${jdbc.username}"/>  
+        <property name="password" value="${jdbc.password}"/>
+        <!-- 连接池启动时的初始值 -->  
+        <property name="initialSize" value="${jdbc.initialSize}" />
+        <!-- 连接池的最大值 -->  
+        <property name="maxActive" value="${jdbc.maxActive}" />  
+        <!-- 最大空闲值.当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放一部分，一直减少到maxIdle为止  -->  
+        <property name="maxIdle" value="${jdbc.maxIdle}" />  
+        <!-- 最小空闲值.当空闲的连接数少于阀值时， 连接池就会预申请去一些连接，以免洪峰来时来不及申请 -->  
+        <property name="minIdle" value="${jdbc.minIdle}" />
+    </bean>
+    
+    <!--创建sqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--dataSource属性指定要用到的连接池-->
+        <property name="dataSource" ref="dataSource" />
+		
+        <!-- configLocation属性指定mybatis的核心配置文件 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+		
+        <!-- 配置自动别名识别 ,有了这个配置，我们就不用去mybatis配置文件里配置别名映射了-->
+        <property name="typeAliasesPackage" value="com.jiuyi.qujiuyi.dto" />
+        
+    </bean>
+	
+    <!--MapperScannerConfigurer配置，有了这个配置我们就可以省略mapper映射配置，前提是接口和XML在同一包中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jiuyi.qujiuyi.dao" />
+         <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>  
+    </bean>
+    
+    <!-- 配置事务管理器，注意这里的dataSource和SqlSessionFactoryBean的dataSource要一致，不然事务就没有作用了 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <!-- 配置事务的传播特性 -->
+    <bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor" abstract="false">
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="transactionAttributes">
+            <props>
+                <!-- 
+                    PROPAGATION_SUPPORTS:如果已经存在事务，则加入事务；如果没有事务，则以非事务的方式执行；
+                    PROPAGATION_MANDATORY:使用当前事务，如果没有，则抛出异常； 
+                    PROPAGATION_REQUIRED:新建事务，如果当前有事务，则挂起；
+                    PROPAGATION_NOT_SUPPORTED:以非事务的方式执行，如果当前有事务，则挂起；
+                    PROPAGATION_NEVER:以非事务的方式执行，如果当前有事务，则抛出异常；
+                    +/-Exception:+表示异常出现时事物提交，－表示异常 出现时事务回滚
+                -->
+                <prop key="*">PROPAGATION_REQUIRED,-Exception</prop>
+            </props>
+        </property>
+    </bean>
+     <!-- ******************************end*********************** -->
+     
+     
+     <!-- =========================药房数据库配置================= -->
+	<!-- ===================start============================== -->
+	<!--配置数据源  -->   
+    <bean id="dataSource1" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">       
+        <property name="driverClassName" value="${jdbc.yao.driver}"/>  
+        <property name="url" value="${jdbc.yao.url}"/>  
+        <property name="username" value="${jdbc.yao.username}"/>  
+        <property name="password" value="${jdbc.yao.password}"/>
+        <!-- 连接池启动时的初始值 -->  
+        <property name="initialSize" value="${jdbc.initialSize}" />
+        <!-- 连接池的最大值 -->  
+        <property name="maxActive" value="${jdbc.maxActive}" />  
+        <!-- 最大空闲值.当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放一部分，一直减少到maxIdle为止  -->  
+        <property name="maxIdle" value="${jdbc.maxIdle}" />  
+        <!-- 最小空闲值.当空闲的连接数少于阀值时， 连接池就会预申请去一些连接，以免洪峰来时来不及申请 -->  
+        <property name="minIdle" value="${jdbc.minIdle}" />
+    </bean>
+    
+    <!--创建sqlSessionFactory -->
+    <bean id="sqlSessionFactory1" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--dataSource属性指定要用到的连接池-->
+        <property name="dataSource" ref="dataSource1" />
+		
+        <!-- configLocation属性指定mybatis的核心配置文件 -->
+        <property name="configLocation" value="classpath:mybatis-config2.xml" />
+		
+        <!-- 配置自动别名识别 ,有了这个配置，我们就不用去mybatis配置文件里配置别名映射了-->
+        <property name="typeAliasesPackage" value="com.jiuyi.qujiuyi.dto" />
+    </bean>
+	
+    <!--MapperScannerConfigurer配置，有了这个配置我们就可以省略mapper映射配置，前提是接口和XML在同一包中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jiuyi.qujiuyi.daoyao" />
+         <property name="sqlSessionFactory" ref="sqlSessionFactory1"></property>  
+    </bean>
+    
+    <!-- 配置事务管理器，注意这里的dataSource和SqlSessionFactoryBean的dataSource要一致，不然事务就没有作用了 -->
+    <bean id="transactionManager1" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource1" />
+    </bean>
+    
+    <!-- 配置事务的传播特性 -->
+    <bean id="transactionInterceptor1" class="org.springframework.transaction.interceptor.TransactionInterceptor" abstract="false">
+        <property name="transactionManager" ref="transactionManager1" />
+        <property name="transactionAttributes">
+            <props>
+                <!-- 
+                    PROPAGATION_SUPPORTS:如果已经存在事务，则加入事务；如果没有事务，则以非事务的方式执行；
+                    PROPAGATION_MANDATORY:使用当前事务，如果没有，则抛出异常； 
+                    PROPAGATION_REQUIRED:新建事务，如果当前有事务，则挂起；
+                    PROPAGATION_NOT_SUPPORTED:以非事务的方式执行，如果当前有事务，则挂起；
+                    PROPAGATION_NEVER:以非事务的方式执行，如果当前有事务，则抛出异常；
+                    +/-Exception:+表示异常出现时事物提交，－表示异常 出现时事务回滚
+                -->
+                <prop key="*">PROPAGATION_REQUIRED,-Exception</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- ===================end============================== -->
+	
+    <!-- 用来定义哪些类需要采用事物管量spring事物的动态代理类BeanNameAutoProxyCreator根据类名自动代理，接受表达式 -->
+    <bean id="BeanProxy" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <!-- 对类名以ServiceImpl结尾的类进行代理 -->
+            <value>*ServiceImpl</value>
+        </property>
+		
+        <!-- 对代理类进行加载拦截器（实现通知的过程） -->
+        <property name="interceptorNames">
+            <list>
+                <value>transactionInterceptor</value>
+            </list>
+        </property>
+    </bean>
+</beans>

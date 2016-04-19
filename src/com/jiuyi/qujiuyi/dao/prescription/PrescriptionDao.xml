@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.prescription.PrescriptionDao">
+	<!-- 更改处方信息 -->
+	<update id="updatePrescription" parameterType="PrescriptionDto">
+		update t_prescription set updateTime = now()
+			<if test="patientId != null">
+				,patientId = #{patientId}
+			</if>
+			<if test="relativeId != null ">
+				,relativeId = #{relativeId}
+			</if>
+			<if test="relativeName != null ">
+				,relativeName = #{relativeName}
+			</if>
+			<if test="relativeUid != null">
+				,relativeUid = #{relativeUid}
+			</if>
+			<if test="relativeAge != null">
+				,relativeAge = #{relativeAge}
+			</if>
+			<if test="relativeGender != null">
+				,relativeGender = #{relativeGender}
+			</if>
+		    <if test="status != null">
+		    	,`status` = #{status}
+		    </if>
+		    <where>
+		    	id = #{id}
+		    </where>
+	</update>
+	
+	<!-- 2.根据处方ID查询 -->
+	<select id="queryPrescriptionById" parameterType="PrescriptionDto" resultType="PrescriptionDto">
+		select a.*,b.name doctorName,c.name hospitalName,c.pharmacyAddress, d.name departmentName,e.name titleName,f.receiverWay from t_prescription a 
+		LEFT JOIN t_doctor b ON a.doctorId = b.id
+		LEFT JOIN t_hospital c ON c.id = b.hospitalId
+		LEFT JOIN t_department d ON d.id = b.departmentId
+		LEFT JOIN t_doctor_title e ON e.id = b.titleId
+    LEFT JOIN t_third_pay_order f ON a.id = f.serviceId
+		where a.patientId = #{patientId} and a.id = #{id} and a.deleteStatus = 1 and a.version = 1
+		<if test="status != null">
+			and a.status = #{status}
+		</if>
+	</select>
+	
+	<!-- 3.查询用户处方列表 -->
+	<select id="queryPrescriptionListByPaitnetId" parameterType="PrescriptionDto" resultType="PrescriptionDto">
+		select a.*,b.name doctorName,c.name hospitalName, d.name departmentName,e.name titleName,f.receiverWay from t_prescription a 
+		LEFT JOIN t_doctor b ON a.doctorId = b.id
+		LEFT JOIN t_hospital c ON c.id = b.hospitalId
+		LEFT JOIN t_department d ON d.id = b.departmentId
+		LEFT JOIN t_doctor_title e ON e.id = b.titleId
+        LEFT JOIN t_third_pay_order f ON a.id = f.serviceId
+		
+		where a.patientId = #{patientId} and a.deleteStatus = 1 and a.version = 1
+		<if test="status != null and status != 10 and status != 11">
+			and a.status = #{status}
+		</if>
+		<if test="status != null and status == 10">
+			and a.status != 9 and a.status != 7 and a.status != 6
+		</if>
+		<if test="status != null and status == 11">
+			and (a.status = 9 or a.status = 7 or a.status = 6 )
+		</if>
+		
+	</select>
+	
+	<!-- 4.删除处方 -->
+	<update id="deletePrescription" parameterType="PrescriptionDto">
+		update t_prescription set deleteStatus = 0
+			where id = #{id} and patientId = #{patientId}
+	</update>
+		
+</mapper>

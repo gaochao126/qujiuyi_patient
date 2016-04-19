@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.doctor.PersonalDoctorDao">
+	<select id="queryPersonalDoctors" parameterType="PersonalDoctorDto" resultType="DoctorDto">
+		select b.id, b.name, b.head, c.name departmentName, d.name hospitalName, e.name titleName
+		from t_personal_doctor a
+        join t_doctor b on a.doctorId = b.id 
+        left join t_department c  on b.departmentId = c.id
+        left join t_hospital d on b.hospitalId = d.id
+        left join t_doctor_title e on b.titleId =e.id
+		<where>
+			a.patientId = #{patientId}
+			and a.expirationTime &gt; now()
+		</where>
+	</select>
+	
+	<insert id="createPersonalDoctor" parameterType="PersonalDoctorDto">
+		insert into t_personal_doctor
+		(id, patientId, doctorId, createTime, expirationTime)
+		values
+		(#{id}, #{patientId}, #{doctorId}, #{createTime}, #{expirationTime})
+	</insert>
+	
+	<select id="queryPersonalDoctorByPatientIdAndDoctorId" parameterType="PersonalDoctorDto" resultType="PersonalDoctorDto">
+		select * from t_personal_doctor
+		<where>
+			patientId = #{patientId} 
+			and doctorId = #{doctorId}
+			and expirationTime &gt; now()
+		</where>
+	</select>
+</mapper>

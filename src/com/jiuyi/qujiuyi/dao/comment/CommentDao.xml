@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.comment.CommentDao">
+	<insert id="patientCommentDoctorService" parameterType="CommentDto">
+		insert into t_doctor_comment
+		(doctorId, doctorType, patientId, serviceType, serviceId, commentContent, satisfaction, commentTime, treatmentEffect,	illnessReason)
+		values
+		(#{doctorId}, #{doctorType}, #{patientId}, #{serviceType}, #{serviceId}, #{commentContent}, #{satisfaction}, #{commentTime}, #{treatmentEffect}, #{illnessReason})
+	</insert>
+	
+	<select id="getMyComments" parameterType="CommentDto" resultType="CommentDto">
+		select a.*, b.name doctorName, b.departmentName from t_doctor_comment a
+		left join
+		(
+			(select x.id, x.name, y.name departmentName, 0 doctorType from t_hospital_doctor x, t_hospital_department y where x.departmentId = y.id)
+			union all
+			(select x.id, x.name, y.name departmentName, 1 doctorType from t_doctor x, t_department y where x.departmentId = y.id)
+		) b on a.doctorId = b.id and a.doctorType = b.doctorType
+		<where>
+		1
+		<if test="patientId != null">
+			and a.patientId = #{patientId}
+		</if>
+		<if test="serviceId != null">
+			and a.serviceId = #{serviceId}
+		</if>
+			
+		</where>
+	</select>
+	
+	<select id="getCommentsByDoctor" parameterType="CommentDto" resultType="CommentDto">
+		select a.*, b.name patientName, b.gender patientGender, b.birthday patientBirthday
+		from t_doctor_comment a
+		left join t_patient b on a.patientId = b.id
+		<where>
+			a.doctorId = #{doctorId}
+			and a.doctorType = #{doctorType}
+		</where>
+	</select>
+	
+	<!-- 通过服务ID查询评论 -->
+	<select id="queryCommentByServiceId" parameterType="CommentDto" resultType="CommentDto">
+		select * from t_doctor_comment 
+		<where>
+			serviceId= #{serviceId}
+		</where>
+	</select>
+</mapper>

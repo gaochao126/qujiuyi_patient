@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.area.AreaDao">
+	<select id="getCityList" parameterType="CityDto" resultType="CityDto">
+		select cityId, cityName from t_city
+		<where>
+			provinceId = #{provinceId}
+		</where>
+		order by displayOrder
+	</select>
+	
+
+	<select id="getTownList" parameterType="TownDto" resultType="TownDto">
+		select townId, townName from t_town 
+		<where>
+			cityId = #{cityId}
+		</where>
+		order by displayOrder
+	</select>
+</mapper>

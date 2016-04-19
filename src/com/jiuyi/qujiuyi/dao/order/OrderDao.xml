@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.order.OrderDao">
+	<insert id="createOrder" parameterType="OrderDto">
+		insert into t_order 
+		(orderNumber, orderType, patientId, doctorId, serviceType, priceId, serviceId,
+		couponId, payAmount, balance, createTime, payTime, status, totalAmount)
+		values (#{orderNumber}, #{orderType}, #{patientId}, #{doctorId}, #{serviceType}, #{priceId}, #{serviceId},
+		#{couponId}, #{payAmount}, #{balance}, #{createTime}, #{payTime}, #{status}, #{totalAmount})
+	</insert>
+	
+	<update id="deleteOrder" parameterType="OrderDto">
+		update t_order set id = id
+		<where>
+			id = #{id} and patientId = #{patientId}
+		</where>
+	</update>
+
+	<select id="queryOrderList" parameterType="OrderDto" resultType="OrderDto">
+		select a.id, a.orderNumber, a.serviceType, a.payAmount, a.status, a.balance, b.name doctorName, b.head doctorHead,
+		case when a.serviceType = 2 then (select type from t_doctor_private c where a.priceId = c.id) else 0 end as priceType
+		from t_order a, t_doctor b
+		<where>
+		    a.doctorId = b.id
+			and patientId = #{patientId}
+			and orderType = 1
+			<if test="status != null">
+				and a.status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryOrderDetail" parameterType="OrderDto" resultType="OrderDto">
+		select a.id, a.orderNumber, a.serviceType, a.payAmount, a.status, a.createTime,
+		b.name doctorName, b.head doctorHead, c.name hospitalName, d.name titleName, e.name departmentName
+		from t_order a left join t_doctor b on a.doctorId = b.id
+		left join t_hospital c on b.hospitalId = c.id
+		left join t_doctor_title d on b.titleId = d.id
+		left join t_department e on b.departmentId = e.id
+		<where>
+			and a.id = #{id}
+		</where>
+	</select>
+	
+	<select id="queryOrderById" parameterType="OrderDto" resultType="OrderDto">
+		select * from t_order
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<select id="queryOrderByOrderNumber" parameterType="OrderDto" resultType="OrderDto">
+		select * from t_order
+		where orderNumber = #{orderNumber}
+	</select>
+	
+	<update id="updateOrder" parameterType="OrderDto">
+		update t_order set status = #{status}, payTime = #{payTime}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<select id="queryOrderByServiceId" parameterType="OrderDto" resultType="OrderDto">
+		select * from t_order
+		<where>
+			serviceId = #{serviceId}
+		</where>
+	</select>
+</mapper>

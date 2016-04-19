@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.hospital.HospitalDao">
+	<select id="getHospitalList" parameterType="HospitalDto" resultType="HospitalDto">
+		select a.*, b.name levelName,d.cityName,(select count(*) from t_hospital_doctor c where c.hospitalId = a.id) offlineDoctorCount
+		from t_hospital a
+		left join t_hospital_level b on a.level = b.id
+		left join t_city d on a.city = d.cityId
+		<where>
+			<if test="id != null">
+				a.id = #{id}
+			</if>
+			<if test="name != null and name != ''">
+				and locate(#{name}, a.name) > 0
+			</if>
+			<if test="level != null">
+				and level = #{level}
+			</if>
+			<if test="province != null">
+				and province = #{province}
+			</if>
+			<if test="city != null">
+				and city = #{city}
+			</if>
+		</where>
+		order by `sort`, `type`
+	</select>
+	
+	<select id="hospitalDetail" parameterType="HospitalDto" resultType="HospitalDto">
+		select a.*, b.`name` levelName, c.provinceName, d.cityName ,(select count(*) from t_hospital_doctor f where f.hospitalId = a.id) offlineDoctorCount
+		from t_hospital a left join t_hospital_level b on a.level = b.id
+		left join t_province c ON a.province = c.provinceId
+		left join t_city d ON a.city = d.cityId
+		where a.id = #{id}
+	</select>
+</mapper>

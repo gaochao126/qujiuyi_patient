@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.appointment.AppointmentDao">
+	<insert id="patientAppointment" parameterType="AppointmentDto">
+		insert into t_appointment 
+		(
+		    doctorId,          patientId,          name,        phone,         uid,      symptoms,
+		    symptomsImages,    appointmentDate,    timeZone,    createDate,    status,   payStatus
+		)
+		values
+		(
+		    #{doctorId},       #{patientId},       #{name},     #{phone},      #{uid},   #{symptoms},
+		    #{symptomsImages}, #{appointmentDate}, #{timeZone}, #{createDate}, #{status},#{payStatus}
+		)
+	</insert>
+	
+	<select id="getAppointmentById" parameterType="AppointmentDto" resultType="AppointmentDto">
+		select * from t_appointment
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<update id="updatePayStatus" parameterType="AppointmentDto">
+		update t_appointment set payStatus = #{payStatus}
+		<where>
+			id = #{id}
+		</where>
+	</update>
+	
+	<select id="getAppointmentList" parameterType="AppointmentDto" resultType="AppointmentDto">
+		select * from t_appointment
+		<where>
+			patientId = #{patientId}
+			and payStatus = 1
+		</where>
+	</select>
+</mapper>

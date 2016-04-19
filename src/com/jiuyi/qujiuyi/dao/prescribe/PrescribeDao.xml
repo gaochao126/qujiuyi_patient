@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.prescribe.PrescribeDao">
+	<insert id="createPrescribe" parameterType="PrescribeDto" useGeneratedKeys="true" keyProperty="id">
+		insert into t_prescribe 
+		(
+			doctorId,          patientId,             symptoms,              symptomsImages, 
+			age,               gender,                receiveType,           receiveAddress, 
+			status,            distributionStatus,    presListImage,         createTime
+		)
+		values
+		(
+			#{doctorId},       #{patientId},          #{symptoms},           #{symptomsImages}, 
+			#{age},            #{gender},             #{receiveType},        #{receiveAddress}, 
+			#{status},         #{distributionStatus}, #{presListImage},      #{createTime}
+		)
+	</insert>
+	
+	<select id="queryPrescribeDetail" parameterType="PrescribeDto"  resultType="PrescribeDto">
+		select a.*, b.head doctorHead, b.name doctorName, c.name departmentName, d.name hospitalName, e.name titleName,
+		f.addr detailAddr, f.phone, g.provinceName, h.cityName, i.townName, f.name receiver, f.phone receiverPhone
+		from t_prescribe a
+		left join t_doctor b on a.doctorId = b.id
+		left join t_department c on b.departmentId = c.id
+		left join t_hospital d on b.hospitalId = d.id
+		left join t_doctor_title e  on b.titleId = e.id
+		left join t_patient_addr f on a.receiveAddress = f.id
+		left join t_province g on f.provinceId = g.provinceId
+		left join t_city h on f.cityId = h.cityId
+		left join t_town i on f.townId = i.townId
+		<where>
+			a.id = #{id}
+			and a.patientId = #{patientId}
+		</where>
+	</select>
+	
+	<select id="getPrescribeListByPatientId" parameterType="PrescribeDto"  resultType="PrescribeDto">
+		select a.*, b.name doctorName, e.name titleName, f.name receiver, f.phone receiverPhone, sum(g.quantity * h.price) totalPrice
+		from t_prescribe a
+		left join t_doctor b on a.doctorId = b.id
+		left join t_doctor_title e  on b.titleId = e.id
+		left join t_patient_addr f on a.receiveAddress = f.id
+		left join t_prescribe_detail g on a.id = g.prescribeId
+		left join t_medicine h on g.medicineId = h.id
+		<where>
+			a.patientId = #{patientId}
+			<if test="status != null and status == 0">
+				and a.status = #{status}
+			</if>
+			<if test="status != null and status == 1">
+				and (a.status = 1 or a.status = 2)
+			</if>
+		</where>
+		group by a.id
+		order by a.createTime desc
+	</select>
+	
+	<!-- 删除配药 -->
+	<delete id="delPrescribe" parameterType="PrescribeDto">
+		delete from t_prescribe where id = #{id}
+	</delete>
+	
+</mapper>

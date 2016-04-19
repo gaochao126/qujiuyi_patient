@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.withdrawal.WithdrawalDao">
+    <insert id="bankWithdrawal" parameterType="WithdrawalDto">
+    	insert into t_patient_withdrawal
+    	(patientId, type, bankId, openAddr, account, name, amount, status, createTime)
+    	values
+    	(#{patientId}, 1, #{bankId}, #{openAddr}, #{account}, #{name}, #{amount}, 0, #{createTime})
+    </insert>
+    
+    <insert id="alipayWithdrawal" parameterType="WithdrawalDto">
+    	insert into t_patient_withdrawal
+    	(patientId, type, account, name, amount, status, createTime)
+    	values
+    	(#{patientId}, 2, #{account}, #{name}, #{amount}, 0, #{createTime})
+    </insert>
+    
+    <select id="queryWithdrawalRecordsByCondition" parameterType="WithdrawalDto" resultType="WithdrawalDto">
+    	select * from t_patient_withdrawal
+    	<where>
+    		patientId = #{patientId}
+    		<if test="startTime != null">
+    			and createTime &gt; #{startTime}
+    		</if>
+    		<if test="endTime != null">
+    			and createTime &lt; #{endTime}
+    		</if>
+    	</where>
+    </select>
+</mapper>

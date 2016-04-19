@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.order.ThirdPayOrderDao">
+	<insert id="createWeixinPayOrder" parameterType="ThirdPayOrderDto">
+		insert into t_third_pay_order
+		(
+			doctorId,        patientId,          patientRelativeId,     serviceId,        outTradeNo,      transactionId, 
+			prepayId,        totalAmount,        orderType,             createTime,       payTime,         payType,
+			payBank,         payStatus,          couponId,              useBalance,       payAmount,       displayStatus,
+			clientType,		 receiverWay,		 payMode,			    hospitalId,		  timeRange,	   scheduleDate,
+			startTime,		 endTime
+		)
+		values
+		(
+			#{doctorId},     #{patientId},       #{patientRelativeId},  #{serviceId},     #{outTradeNo},   #{transactionId}, 
+			#{prepayId},     #{totalAmount},     #{orderType},          #{createTime},    #{payTime},      #{payType}, 
+			#{payBank},      #{payStatus},       #{couponId},           #{useBalance},    #{payAmount},	   #{displayStatus},
+			#{clientType},	 #{receiverWay},	 #{payMode},			#{hospitalId},	  #{timeRange},	   #{scheduleDate},
+			#{startTime},	 #{endTime}
+		)
+	</insert>
+	
+	<update id="updateWeixinOrder" parameterType="ThirdPayOrderDto">
+		update t_third_pay_order set
+		transactionId  =   #{transactionId},
+		payTime        =   #{payTime},
+		payBank        =   #{payBank},
+		payStatus      =   #{payStatus}
+		<where>
+			outTradeNo = #{outTradeNo}
+		</where>
+	</update>
+	
+	<select id="getWeixinOrderByOutTradeNo" parameterType="ThirdPayOrderDto" resultType="ThirdPayOrderDto">
+		select * from t_third_pay_order
+		<where>
+			outTradeNo = #{outTradeNo}
+		</where>
+	</select>
+	
+	<select id="queryOrderDetailByOutTradeNo" parameterType="ThirdPayOrderDto" resultType="ThirdPayOrderDto">
+		select * from t_third_pay_order
+		where
+		1=1
+		<if test="outTradeNo != null">
+			and outTradeNo = #{outTradeNo}
+		</if>	
+		<if test="patientId != null">
+		    and patientId = #{patientId}
+		</if>
+	</select>
+	
+	<!-- 查询过期的挂号订单 -->
+	<select id="queryThirdPayOrderExpired" parameterType="ThirdPayOrderDto" resultType="ThirdPayOrderDto">
+		select * from t_third_pay_order 
+		<where>
+			`orderType` = 1 
+			and `payStatus`=0 
+			and `displayStatus` = 1 
+			and DATE_ADD(`createTime`,INTERVAL 15 MINUTE) &lt; NOW()
+		</where> 
+	</select>
+	
+	<!-- 更改过期挂号订单的displayStatus状态 -->
+	<update id="updateThirdPayOrderDisplayStatus" parameterType="ThirdPayOrderDto">
+		update t_third_pay_order set displayStatus = 0 
+		<where>
+			`orderType` = 1 
+			and `payStatus`=0 
+			and `displayStatus` = 1 
+			and DATE_ADD(`createTime`,INTERVAL 15 MINUTE) &lt; NOW()
+		</where> 
+	</update>
+	
+	<select id="queryThirdPayOrderByPlanIdAndRelativeId" parameterType="ThirdPayOrderDto" resultType="ThirdPayOrderDto">
+		select * from t_third_pay_order 
+			where 
+		serviceId = #{serviceId} and orderType = 1 and patientRelativeId = #{patientRelativeId} and displayStatus = 1
+	</select>
+	
+	<!-- 根据订单编号更改订单显示状态 -->
+	<update id="updateThirdPayOrderDisplayStatusByOrderNo" parameterType="ThirdPayOrderDto">
+		update t_third_pay_order set displayStatus = 0 
+		where outTradeNo = #{outTradeNo}
+	</update>
+	
+	<!-- 根据订单编号和用户ID更改付款状态 -->
+	<update id="updatePayStatusByOutTradeNoAndPatientId" parameterType="ThirdPayOrderDto">
+		update t_third_pay_order set payStatus = #{payStatus}
+		where patientId = #{patientId} and outTradeNo = #{outTradeNo}
+	</update>
+	
+	<!-- 根据serviceId查询订单 -->
+	<select id="queryThirdPayOrderByServiceId" parameterType="ThirdPayOrderDto" resultType="ThirdPayOrderDto">
+		select * from t_third_pay_order where serviceId = #{serviceId}
+	</select>
+	
+	<!-- 查询未付款，且未过期的订单 -->
+	<select id="queryThirdOrder" parameterType="ThirdPayOrderDto" resultType="ThirdPayOrderDto">
+		select * from t_third_pay_order 
+		where 
+		payStatus = 0 
+		and displayStatus = 1 
+		and  orderType = 1 
+		and payType = 1
+	</select>
+	
+	<!-- 删除未付款的订单（脏数据） -->
+	<delete id="deleteNoPayOrder">
+		delete from t_third_pay_order where payStatus = 0 and DATE_ADD(`createTime`,INTERVAL 1 HOUR) &lt; NOW()
+	</delete>
+</mapper>

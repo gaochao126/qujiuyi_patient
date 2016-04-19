@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.coupon.CouponDao">
+	<select id="queryCouponsByPatientId" parameterType="CouponDto" resultType="CouponDto">
+		select * from t_coupon
+		<where>
+			patientId = #{patientId}
+			and status = 0
+			and expireTime &gt; now()
+		</where>
+		order by expireTime asc
+	</select>
+	
+	<select id="queryCoupons" parameterType="CouponDto" resultType="CouponDto">
+		select * from t_coupon where 1=1
+		<if test="patientId != null">
+			and patientId = #{patientId}
+		</if>
+		<if test="status != null and status == 0">
+			and status = #{status} and expireTime &gt; now()
+		</if>
+		<if test="status != null and status == 1">
+			and status = #{status}
+		</if>
+		<if test="status != null and status == 3">
+			and status = #{status} and expireTime &lt; now()
+		</if>
+		
+	</select>
+	
+	
+	<select id="queryCouponsById" parameterType="CouponDto" resultType="CouponDto">
+		select * from t_coupon
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<select id="updateCouponStatus" parameterType="CouponDto">
+		update t_coupon set status = #{status}
+		<where>
+			id = #{id}
+		</where>
+	</select>
+	
+	<insert id="createCoupon"  parameterType="CouponDto">
+		insert into t_coupon
+		(patientId, amount, source, createTime, expireTime, status)
+		values
+		(#{patientId}, #{amount}, 2, #{createTime}, #{expireTime}, 0)
+	</insert>
+	
+	<update id="CouponExpired" parameterType="CouponDto">
+		update t_coupon set status = 3
+		where expireTime &lt; now() and status = 0
+	</update>
+</mapper>

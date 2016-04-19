@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.daoyao.address.AddressDao">
+	<!-- 1.查询省 -->
+	<select id="queryProvice" parameterType="AreaDto" resultType="AreaDto">
+		select * from quan_prov_city_area where arealevel=1
+	</select>
+	
+	<!-- 2.查询市 -->
+	<select id="queryCityByProvince" parameterType="AreaDto" resultType="AreaDto">
+		select * from quan_prov_city_area where arealevel = 2 and topno = #{no}
+	</select>
+	
+	<!-- 3.查询区县 -->
+	<select id="queryTownByCity" parameterType="AreaDto" resultType="AreaDto">
+		select * from quan_prov_city_area where arealevel = 3 and topno = #{no}
+	</select>
+	
+</mapper>

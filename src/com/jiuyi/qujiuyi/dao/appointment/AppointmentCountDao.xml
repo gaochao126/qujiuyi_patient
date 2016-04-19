@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jiuyi.qujiuyi.dao.appointment.AppointmentCountDao">
+	<select id="getAppointmentCount" parameterType="AppointmentCountDto" resultType="AppointmentCountDto">
+		select * from t_appointment_count
+		<where>
+			doctorId = #{doctorId}
+			and date = #{date}
+			and timeZone = #{timeZone}
+		</where>
+	</select>
+	
+	<insert id="insertAppointmentCount" parameterType="AppointmentCountDto">
+		insert into t_appointment_count
+		(
+			doctorId,      date,      timeZone,      usedNumber
+		)
+		values
+		(
+			#{doctorId},   now(),     #{timeZone},   #{usedNumber}
+		)
+	</insert>
+	
+	<update id="updateAppointmentCount" parameterType="AppointmentCountDto">
+		update t_appointment_count set usedNumber = (usedNumber + 1)
+		<where>
+			doctorId = #{doctorId}
+		</where>
+	</update>
+</mapper>
