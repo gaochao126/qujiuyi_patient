@@ -134,4 +134,28 @@ public class DepartmentServiceImpl implements DepartmentService {
 		return list1 != null && !list1.isEmpty() ? list1 : null;
 
 	}
+
+	/**
+	 * 查询科室
+	 * 
+	 * @param departmentDto
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseDto queryDepart(DepartmentDto departmentDto) throws Exception {
+		if (departmentDto == null) {
+			throw new BusinessException(Constants.DATA_ERROR);
+		}
+
+		DepartmentDto depart = departmentDao.queryDepartmentById(departmentDto);
+		if (Util.isNotEmpty(depart.getIcon())) {
+			if (!depart.getIcon().startsWith("http") || !depart.getIcon().startsWith("HTTP")) {
+				depart.setIcon(SysCfg.getString("department.icon") + depart.getIcon());
+			}
+		}
+		ResponseDto responseDto = new ResponseDto();
+		responseDto.setDetail(depart);
+		responseDto.setResultDesc("成功");
+		return responseDto;
+	}
 }
