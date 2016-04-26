@@ -6,9 +6,19 @@ import com.jiuyi.qujiuyi.dto.scancode.ScanCodeDto;
 public interface ScanCodeService {
 	/**
 	 * 1.扫码，运营人员工作量记录
+	 * 
 	 * @param scanCodeDto
 	 * @return
 	 * @throws Exception
 	 */
-	public ResponseDto scanCode(ScanCodeDto scanCodeDto)throws Exception;
+	public ResponseDto scanCode(ScanCodeDto scanCodeDto) throws Exception;
+
+	/**
+	 * 2.医院扫码
+	 * 
+	 * @param scanCodeDto
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseDto hospitalScanCode(ScanCodeDto scanCodeDto) throws Exception;
 }
