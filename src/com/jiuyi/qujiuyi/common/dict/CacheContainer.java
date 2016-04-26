@@ -218,6 +218,7 @@ public class CacheContainer {
 		serviceMap.put("stopRegister", PatientRegisterService.class);
 		serviceMap.put("onceAgain", PrescriptionService.class);
 		serviceMap.put("queryDepart", DepartmentService.class);
+		serviceMap.put("hospitalScanCode", ScanCodeService.class);
 
 		/** not authentication map. */
 		notAuthMap.put("register", null);
@@ -262,6 +263,7 @@ public class CacheContainer {
 		notAuthMap.put("scanCode", null);
 		notAuthMap.put("stopRegister", null);
 		notAuthMap.put("queryDepart", null);
+		notAuthMap.put("hospitalScanCode", null);
 
 		/** update recommend department list. */
 		new Timer().schedule(new TimerTask() {

@@ -4,9 +4,9 @@
 	<!-- 1.添加运营人员工作量记录 （关注微信公众号）-->
 	<insert id="insertWorkLoad" parameterType="ScanCodeDto">
 		insert into t_scan_code_workload 
-		(weixinOpenId, 			adminId, 			createTime) 
+		(weixinOpenId, 			adminId, 			createTime,		hospitalId, 		type) 
 		values 
-		(#{weixinOpenId},		#{adminId},         now())
+		(#{weixinOpenId},		#{adminId},         now(),			#{hospitalId},		#{type})
 	</insert>
 	
 	<!-- 2.删除运营人员工作量记录 -->
@@ -19,6 +19,15 @@
 		select * from t_scan_code_workload where 1
 		<if test="weixinOpenId != null">
 			and weixinOpenId = #{weixinOpenId}
+		</if>
+		<if test="type != null">
+			and type = #{type}
+		</if>
+		<if test="hospitalId">
+			and hospitalId = #{hospitalId}
+		</if>
+		<if test="adminId != null">
+			and adminId = #{adminId}
 		</if>
 	</select>
 </mapper>
